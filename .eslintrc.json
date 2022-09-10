@@ -11,6 +11,7 @@
     "no-console": 0,
     "indent": 0,
     "max-len": 0,
+    "no-multi-space": false,
     "linebreak-style": 0,
     "prettier/prettier": [
       "error",
