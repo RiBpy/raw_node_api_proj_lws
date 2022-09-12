@@ -28,4 +28,16 @@ if(typeof(str==="string" && str.length>0)){
     return false
 }
 }
+utilities.createRandomString=(strLength)=>{
+  if(typeof(strLength)==="number"){
+    let stringOut="";
+    let possibleStr="abcdefghijklmnopqrstuvwxyz0123456789"
+    for(let i=1 ; i<=strLength; i++){
+        stringOut+=possibleStr.charAt(Math.floor(Math.random()*possibleStr.length))
+    }
+    return stringOut;
+  }else{
+    return "Provide string length in number"
+  }
+}
 module.exports=utilities;
