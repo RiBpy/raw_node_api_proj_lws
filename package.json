@@ -10,5 +10,8 @@
     "eslint-plugin-import": "2.25.2",
     "eslint-plugin-prettier": "^4.2.1",
     "prettier": "^2.7.1"
+  },
+  "dependencies": {
+    "react-scripts": "^5.0.1"
   }
 }

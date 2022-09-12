@@ -3,6 +3,7 @@ const url = require('url');
 const { StringDecoder } = require('string_decoder'); //StringDecoder class of string_decoder core module..
 const routes = require('../route');
 const { notFoundHandler } = require('../handlers/routeHandlers/notFoundHandler');
+const {parsedData}=require("./utilities")
 
 // handler scaffolding
 const handler = {};
@@ -41,18 +42,16 @@ handler.ReqResHandler = (req, res) => {
     });
     req.on('end', () => {//after completion of all data to end buffering of data end event will be called and decoder.end will end buffering
         realData += decoder.end();
-
+        requestProperties.body=parsedData(realData);
         chosenHandler(requestProperties, (statusCode, payload) => {  //chosenHandler will tow properties requestProperties and a callback function
             statusCode = typeof statusCode === 'number' ? statusCode : 500;//set if statuscode is given in number formate or set as default 500
             payload = typeof payload === 'object' ? payload : {};//set if statuscode is given in number formate or set as default 500
             const payloadString = JSON.stringify(payload);
             // return final response
+            res.setHeader("Content-Type","application/json")//setting the type of data what client is getting from api..it can be written as content-type  also.
             res.writeHead(statusCode);
             res.end(payloadString);
         });
-        
-        console.log(realData);
-        res.end('Data finished');
     });
 };
 module.exports = handler;

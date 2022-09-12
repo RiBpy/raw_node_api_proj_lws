@@ -15,8 +15,8 @@ const app = {};
 //testing file system
 
 //create data
-// data.create('test','newFile',{name:"BD",language:"Bangla"},(err)=>{//fs in lib/data file will create a file called newFile in test subfolder inside .data folder consisting the given object.
-//     console.log("ERROR IS ",err)
+// data.create('test','newFile',{name:"Bangladesh",language:"Bengali"},(err)=>{//fs in lib/data file will create a file called newFile in test subfolder inside .data folder consisting the given object.
+//     console.log(err)
 // })
 
 
@@ -31,12 +31,12 @@ const app = {};
 // })
 
 //deleting the file
-data.delete('test',"newFile",(err)=>{
- console.log(err)
-});
+// data.delete('test',"newFile",(err)=>{
+//  console.log(err)
+// });
 
 // create the server
-app.createServer = () => {
+app.createdServer = () => {
     const server = http.createServer(app.ReqResHandler);
     server.listen(environment.port, () => {
         console.log(`Server is running on port: ${environment.port}`);
@@ -45,4 +45,4 @@ app.createServer = () => {
 // req response
 app.ReqResHandler = ReqResHandler;
 // start server
-app.createServer();
+app.createdServer();
