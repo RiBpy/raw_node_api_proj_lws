@@ -2,6 +2,7 @@
 const data=require('../../lib/data')
 const {hash}=require('../../helpers/utilities');
 const {parsedData}=require("../../helpers/utilities")
+const tokenHandler =require("./tokenHandler")
 //const { user } = require('../../route');
 
 const handler = {};
@@ -59,17 +60,28 @@ handler.users.get=(requestProperties,callBack)=>{
     //phone number will be in queryString .what was in requestProperties.
     const phone=typeof requestProperties.queryString.phone==="string" && requestProperties.queryString.phone.trim().length===11?requestProperties.queryString.phone:false
     if(phone){
-        data.read("users",phone,(err,user)=>{
-            const userData={...parsedData(user)}//as user may not give proper object the parsedData will make it object and keep it in userData
-           if(!err && userData){
-            delete(userData.password)//cause we don't want to show password .
-            callBack(200,userData)
+        //token verify
+        const token=typeof requestProperties.headersObj.token==="string" && requestProperties.headersObj.token.trim().length===20?requestProperties.headersObj.token:false
+        tokenHandler.token.verify(token,phone,(tokenId)=>{
+           if(tokenId){
+            data.read("users",phone,(err,user)=>{
+                const userData={...parsedData(user)}//as user may not give proper object the parsedData will make it object and keep it in userData
+               if(!err && userData){
+                delete(userData.password)//cause we don't want to show password .
+                callBack(200,userData)
+               }else{
+                callBack(404,{
+                    error:"User found but data load failed"
+                })
+               }
+            })
            }else{
-            callBack(404,{
-                error:"User found but data load failed"
+            callBack(403,{
+                error:"Authentication failed"
             })
            }
-    })}else{
+        })
+   }else{
         callBack(404,{
             error:"User Not Found"
         })
@@ -84,37 +96,46 @@ handler.users.put=(requestProperties,callBack)=>{
     //check if provided phone is in the database ,cause we did use phone as unique field.
     if(phone){
         if(firstName || lastName || password){
-           data.read("users",phone,(err,user)=>{
-            //delete user.tosAgreement;//we don't need agreement to checkup.
-            const userData={...parsedData(user)}
-        if(!err && userData){
-            if(firstName){
-                userData.firstName=firstName
-            }
-            if(lastName){
-                userData.lastName=lastName
-            }
-            if(password){
-                userData.password=hash(password)
-            }
-            data.update("users",phone,userData,(err)=>{
-                if(!err){
-                   callBack(200,{
-                    message:"Data update successful"
-                   })
-                }else{
-                    callBack(400,{
-                        error:"Data update process is failed"
-                    })
+            const token=typeof requestProperties.headersObj.token==="string" && requestProperties.headersObj.token.trim().length===20?requestProperties.headersObj.token:false
+        tokenHandler.token.verify(token,phone,(tokenId)=>{
+           if(tokenId){
+            //lookup user
+            data.read("users",phone,(err,user)=>{
+                //delete user.tosAgreement;//we don't need agreement to checkup.
+                const userData={...parsedData(user)}
+            if(!err && userData){
+                if(firstName){
+                    userData.firstName=firstName
                 }
+                if(lastName){
+                    userData.lastName=lastName
+                }
+                if(password){
+                    userData.password=hash(password)
+                }
+                data.update("users",phone,userData,(err)=>{
+                    if(!err){
+                       callBack(200,{
+                        message:"Data update successful"
+                       })
+                    }else{
+                        callBack(400,{
+                            error:"Data update process is failed"
+                        })
+                    }
+                })
+            }else{
+                callBack(400,{
+                    error:"Data Read is Unsuccessful"
+                })
+            }
+               })
+           }else{
+            callBack(403,{
+                error:"Authentication failed"
             })
-        }else{
-            callBack(400,{
-                error:"Data Read is Unsuccessful"
-            })
-        }
-           })
-        }else{
+           }
+        })}else{
             callBack(400,{
                 error:"Your request was not appropriate"
             })
@@ -128,25 +149,36 @@ handler.users.put=(requestProperties,callBack)=>{
 handler.users.delete=(requestProperties,callBack)=>{
     const phone=typeof requestProperties.queryString.phone==="string" && requestProperties.queryString.phone.trim().length===11?requestProperties.queryString.phone:false
     if(phone){
-      data.read("users",phone,(err,user)=>{
-        if(!err && user){
-           data.delete("users",phone,(err)=>{
-            if(!err){
-              callBack(200,{
-                message:"Successful deleted data"
+        //token verify
+        const token=typeof requestProperties.headersObj.token==="string" && requestProperties.headersObj.token.trim().length===20?requestProperties.headersObj.token:false
+        tokenHandler.token.verify(token,phone,(tokenId)=>{
+           if(tokenId){
+            //data check in database
+            data.read("users",phone,(err,user)=>{
+                if(!err && user){
+                   data.delete("users",phone,(err)=>{
+                    if(!err){
+                      callBack(200,{
+                        message:"Successful deleted data"
+                      })
+                    }else{
+                        callBack(500,{
+                            error:"Data delete unsuccessful"
+                        })
+                    }
+                   })
+                }else{
+                    callBack(500,{
+                        error:"Data read is unsuccessful"
+                    })
+                }
               })
-            }else{
-                callBack(500,{
-                    error:"Data delete unsuccessful"
-                })
-            }
-           })
-        }else{
-            callBack(500,{
-                error:"Data read is unsuccessful"
+           }else{
+            callBack(403,{
+                error:"Authentication failed"
             })
-        }
-      })
+           }
+        })
     }else{
         callBack(400,{
             error:"Data was not there to delete"

@@ -28,7 +28,7 @@ if(phone && password){
      let hashedPass=hash(password)
      if(hashedPass===parsedData(userData).password){
           let tokenId=createRandomString(20);
-          let session=Date.now()+30*60*1000 //30 minutes in milliseconds   
+          let session=Date.now()+60*60*1000 //30 minutes in milliseconds   
           let tokenObject={
             phone,
             id:tokenId,
@@ -152,5 +152,19 @@ handler.token.delete=(requestProperties,callBack)=>{
         })
     }
  
+}
+handler.token.verify=(id,phone,callBack)=>{
+    data.read("tokens",id,(err,tokenInfo)=>{
+        let tokenObject=parsedData(tokenInfo)
+        if(!err && tokenObject){
+            if(tokenObject.phone ===phone && tokenObject.session>Date.now()){
+                callBack(true)
+            }else{
+                callBack(false)
+            }
+        }else{
+            callBack(false)
+        }
+    })
 }
 module.exports = handler;
